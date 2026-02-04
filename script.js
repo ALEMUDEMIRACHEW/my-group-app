@@ -165,3 +165,43 @@ async function deleteSong(id) {
 
 // Add this line inside your window.onload function so it loads songs too:
 // fetchSongs();
+// --- COURSE FUNCTIONS ---
+
+async function fetchCourses() {
+    let { data: courses, error } = await _supabase
+        .from('courses')
+        .select('*')
+        .order('id', { ascending: false });
+
+    if (!error && courses.length > 0) {
+        displayCourse(courses[0]); // Shows the most recent course added
+    }
+}
+
+async function addCourse() {
+    const title = document.getElementById('courseTitle').value;
+    const time = document.getElementById('courseTime').value;
+    const link = document.getElementById('courseLink').value;
+
+    const { error } = await _supabase
+        .from('courses')
+        .insert([{ title: title, meeting_time: time, material_link: link }]);
+
+    if (error) alert(error.message);
+    else {
+        fetchCourses(); // Refresh to show the new info
+    }
+}
+
+function displayCourse(course) {
+    const display = document.getElementById('courseDisplay');
+    display.innerHTML = `
+        <div class="course-item">
+            <strong>${course.title}</strong>
+            <p>Next Meeting: ${course.meeting_time}</p>
+            ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link">Download PDF Material</a>` : ''}
+        </div>
+    `;
+}
+
+// Don't forget to add fetchCourses(); inside your window.onload!

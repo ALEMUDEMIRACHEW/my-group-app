@@ -27,16 +27,20 @@
                 <input type="text" id="songLink" placeholder="Link (YouTube/PDF)">
                 <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60; margin-top: 5px;">Add Song</button>
             </div>
-            <ul id="songList" style="margin-top: 15px;">
-                </ul>
+            <ul id="songList" style="margin-top: 15px;"></ul>
         </section>
 
         <section class="card">
-            <h2>📚 Current Courses</h2>
-            <div class="course-item">
-                <strong>Foundations of Faith 101</strong>
-                <p>Next Meeting: Monday at 7 PM</p>
-                <a href="#" class="link">Download PDF Material</a>
+            <h2>📚 Current Course</h2>
+            <div class="input-group">
+                <input type="text" id="courseTitle" placeholder="Course Name">
+                <input type="text" id="courseTime" placeholder="Meeting Time (e.g. Mon 7pm)">
+                <input type="text" id="courseLink" placeholder="PDF/Material Link">
+                <button onclick="addCourse()" class="btn-primary" style="background-color: #3498db; margin-top: 5px;">Update Course Info</button>
+            </div>
+            
+            <div id="courseDisplay" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
+                <p style="color: gray;">Loading course info...</p>
             </div>
         </section>
     </div>
