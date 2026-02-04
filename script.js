@@ -9,7 +9,20 @@ window.onload = () => {
     fetchAnnouncement();
 };
 
-// ANNOUNCEMENTS
+// --- IMAGE PREVIEW LOGIC ---
+function previewImage(event) {
+    const reader = new FileReader();
+    const preview = document.getElementById('imagePreview');
+    reader.onload = function() {
+        preview.src = reader.result;
+        preview.style.display = 'block';
+    }
+    if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+    }
+}
+
+// --- ANNOUNCEMENTS ---
 async function fetchAnnouncement() {
     let { data } = await _supabase.from('announcements').select('*').order('id', { ascending: false }).limit(1);
     if (data && data.length > 0) document.getElementById('announcementDisplay').innerText = data[0].content;
@@ -23,7 +36,7 @@ async function updateAnnouncement() {
     fetchAnnouncement();
 }
 
-// MEMBERS & PROFILES
+// --- MEMBERS & PROFILES (WITH IMAGE UPLOAD) ---
 async function fetchMembers() {
     let { data: members } = await _supabase.from('members').select('*').order('name', { ascending: true });
     if (members) {
@@ -34,9 +47,45 @@ async function fetchMembers() {
 }
 
 async function addMember() {
+    const submitBtn = document.getElementById('submitBtn');
+    const fileInput = document.getElementById('photoFile');
+    const file = fileInput.files[0];
+    let photoUrl = 'https://via.placeholder.com/150'; // Default
+
+    if (!document.getElementById('nameInput').value) {
+        alert("Please enter a name");
+        return;
+    }
+
+    submitBtn.innerText = "Uploading...";
+    submitBtn.disabled = true;
+
+    // 1. Upload Image to Storage Bucket
+    if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        let { error: uploadError } = await _supabase.storage
+            .from('profile-photos') // MUST exist in your Supabase dashboard
+            .upload(filePath, file);
+
+        if (uploadError) {
+            alert("Image upload failed: " + uploadError.message);
+            submitBtn.innerText = "Create Profile";
+            submitBtn.disabled = false;
+            return;
+        }
+
+        // 2. Get Public URL
+        const { data } = _supabase.storage.from('profile-photos').getPublicUrl(filePath);
+        photoUrl = data.publicUrl;
+    }
+
+    // 3. Insert into Database
     const payload = {
         name: document.getElementById('nameInput').value,
-        photo_url: document.getElementById('photoUrl').value || 'https://via.placeholder.com/150',
+        photo_url: photoUrl,
         age: document.getElementById('ageInput').value,
         job_status: document.getElementById('jobInput').value,
         marital_status: document.getElementById('maritalInput').value,
@@ -45,9 +94,20 @@ async function addMember() {
         activity: document.getElementById('activityInput').value,
         is_present: false
     };
-    await _supabase.from('members').insert([payload]);
-    document.querySelectorAll('.profile-grid-form input, select').forEach(i => i.value = "");
-    fetchMembers();
+
+    const { error } = await _supabase.from('members').insert([payload]);
+    
+    if (error) {
+        alert("Error saving member: " + error.message);
+    } else {
+        // Reset Form
+        document.querySelectorAll('.profile-grid-form input, select').forEach(i => i.value = "");
+        document.getElementById('imagePreview').style.display = 'none';
+        fetchMembers();
+    }
+    
+    submitBtn.innerText = "Create Profile";
+    submitBtn.disabled = false;
 }
 
 function displayMembers(members) {
@@ -55,22 +115,21 @@ function displayMembers(members) {
     list.innerHTML = "";
     members.forEach(m => {
         const li = document.createElement('li');
-        li.className = "profile-card"; // Apply CSS styles
-        li.style = "background: white; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);";
+        li.className = "profile-card";
         li.innerHTML = `
-            <img src="${m.photo_url}" style="width: 100%; height: 160px; object-fit: cover;">
+            <img src="${m.photo_url}" style="width: 100%; height: 200px; object-fit: cover;">
             <div style="padding: 15px;">
-                <div style="display:flex; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0;">${m.name}</h3>
                     <input type="checkbox" ${m.is_present ? 'checked' : ''} onclick="toggleAttendance(${m.id}, ${m.is_present})">
                 </div>
-                <span class="role-badge" style="font-size:0.7em; background:#e1f5fe; padding:2px 8px; border-radius:10px;">${m.role || 'Member'}</span>
-                <div style="font-size: 0.8em; color: #666; margin-top: 10px;">
-                    <p>📍 ${m.location || 'N/A'}</p>
-                    <p>💼 ${m.job_status || 'N/A'}</p>
-                    <p>🎯 ${m.activity || 'No current activity'}</p>
+                <span class="role-badge">${m.role || 'Member'}</span>
+                <div style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                    <p style="margin:2px 0;">📍 ${m.location || 'N/A'}</p>
+                    <p style="margin:2px 0;">💼 ${m.job_status || 'N/A'}</p>
+                    <p style="margin:2px 0;">🎯 ${m.activity || 'No current activity'}</p>
                 </div>
-                <button onclick="deleteMember(${m.id})" style="margin-top:10px; color:red; border:none; background:none; cursor:pointer; font-size:0.7em;">Remove</button>
+                <button onclick="deleteMember(${m.id})" style="margin-top:10px; color:#e74c3c; border:none; background:none; cursor:pointer; font-size:0.8em; font-weight:bold;">[ Delete Profile ]</button>
             </div>
         `;
         list.appendChild(li);
@@ -83,13 +142,13 @@ async function toggleAttendance(id, status) {
 }
 
 async function deleteMember(id) {
-    if (confirm("Delete profile?")) {
+    if (confirm("Permanently delete this profile?")) {
         await _supabase.from('members').delete().eq('id', id);
         fetchMembers();
     }
 }
 
-// SONGS
+// --- SONGS & COURSES ---
 async function fetchSongs() {
     let { data } = await _supabase.from('songs').select('*').order('id', { ascending: false });
     if (data) displaySongs(data);
@@ -122,7 +181,6 @@ function displaySongs(songs) {
     });
 }
 
-// COURSES
 async function fetchCourses() {
     let { data } = await _supabase.from('courses').select('*').order('id', { ascending: false }).limit(1);
     if (data && data.length > 0) {

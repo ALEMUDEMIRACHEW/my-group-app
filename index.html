@@ -25,6 +25,25 @@
         }
         .full-row { grid-column: span 2; }
         
+        /* New File Upload Styling */
+        .file-upload-wrapper {
+            grid-column: span 2;
+            background: #f8f9fa;
+            padding: 15px;
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            text-align: center;
+        }
+        #imagePreview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-top: 10px;
+            display: none; /* Hidden until image is picked */
+            border: 2px solid #3498db;
+        }
+
         #memberList {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -61,7 +80,6 @@
 
             <div class="profile-grid-form">
                 <input type="text" id="nameInput" placeholder="Full Name">
-                <input type="text" id="photoUrl" placeholder="Photo URL (Link)">
                 <input type="number" id="ageInput" placeholder="Age">
                 <input type="text" id="jobInput" placeholder="Job Status">
                 <select id="maritalInput">
@@ -73,7 +91,14 @@
                 <input type="text" id="locationInput" placeholder="Location">
                 <input type="text" id="roleInput" placeholder="Group Role (e.g. Leader)">
                 <input type="text" id="activityInput" placeholder="Current Group Activity" class="full-row">
-                <button onclick="addMember()" class="btn-primary full-row">Create Profile</button>
+                
+                <div class="file-upload-wrapper">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Member Photo</label>
+                    <input type="file" id="photoFile" accept="image/*" onchange="previewImage(event)">
+                    <center><img id="imagePreview" src=""></center>
+                </div>
+
+                <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">Create Profile</button>
             </div>
 
             <ul id="memberList"></ul>
