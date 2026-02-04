@@ -13,75 +13,71 @@
     </nav>
 
     <div class="container">
-        <section class="card announcement-card">
+        <section class="card">
             <h2>📢 Group Announcement</h2>
             <div class="input-group">
-                <input type="text" id="announcementInput" placeholder="Post a message to the group...">
-                <button onclick="updateAnnouncement()" class="btn-primary" style="background-color: #fbc02d; color: #333;">Post</button>
+                <input type="text" id="announcementInput" placeholder="New announcement...">
+                <button onclick="updateAnnouncement()" class="btn-primary" style="background:#fbc02d; color:#333; width:auto;">Post</button>
             </div>
-            <div id="announcementDisplay">Loading...</div>
+            <div id="announcementDisplay" style="margin-top:10px; font-weight:bold;">Loading...</div>
         </section>
 
         <section class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>👥 Member Directory</h2>
-                <span id="headcount" class="role-badge" style="background: #e3f2fd; color: #1976d2;">Total: 0 | Present: 0</span>
+                <span id="headcount" class="role-badge">Total: 0 | Present: 0</span>
             </div>
 
-            <div class="profile-grid-form">
-                <input type="text" id="nameInput" placeholder="Full Name">
-                <input type="number" id="ageInput" placeholder="Age">
-                <input type="text" id="jobInput" placeholder="Job Status">
-                <select id="maritalInput">
-                    <option value="" disabled selected>Marital Status</option>
-                    <option value="Single">Single</option>
-                    <option value="Married">Married</option>
-                    <option value="Widowed">Widowed</option>
-                </select>
-                <input type="text" id="locationInput" placeholder="Location">
-                <input type="text" id="roleInput" placeholder="Group Role (e.g. Leader)">
-                <input type="text" id="activityInput" placeholder="Current Group Activity" class="full-row">
-                
-                <div class="file-upload-wrapper">
-                    <label>Member Photo</label>
-                    <input type="file" id="photoFile" accept="image/*" onchange="previewImage(event)">
-                    <div id="uploadProgressContainer" style="display:none; margin-top:10px;">
-                        <div id="uploadProgressBar"></div>
+            <details style="margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
+                <summary style="cursor:pointer; font-weight:bold; color:#3498db;">+ Add New Member Profile</summary>
+                <div class="profile-grid-form" style="margin-top:15px;">
+                    <input type="text" id="nameInput" placeholder="Full Name">
+                    <input type="number" id="ageInput" placeholder="Age">
+                    <input type="text" id="jobInput" placeholder="Job Status">
+                    <select id="maritalInput">
+                        <option value="" disabled selected>Marital Status</option>
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                    </select>
+                    <input type="text" id="locationInput" placeholder="Location">
+                    <input type="text" id="roleInput" placeholder="Group Role">
+                    <input type="text" id="activityInput" placeholder="Activity" class="full-row">
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="photoFile" accept="image/*" onchange="previewImage(event)">
+                        <center><img id="imagePreview" src=""></center>
                     </div>
-                    <center><img id="imagePreview" src=""></center>
+                    <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">
+                        <span id="btnText">Save Member</span>
+                        <div id="btnSpinner" class="spinner" style="display:none;"></div>
+                    </button>
                 </div>
-
-                <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">
-                    <span id="btnText">Create Profile</span>
-                    <div id="btnSpinner" class="spinner" style="display:none;"></div>
-                </button>
-            </div>
+            </details>
 
             <ul id="memberList"></ul>
         </section>
 
-        <section class="card">
-            <h2>🎵 Song List to Study</h2>
-            <div class="input-group">
-                <input type="text" id="songTitle" placeholder="Song Title">
-                <input type="text" id="songCategory" placeholder="Category">
-                <input type="text" id="songLink" placeholder="Link">
-                <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60;">Add Song</button>
-            </div>
-            <input type="text" id="songSearch" onkeyup="filterSongs()" placeholder="🔍 Search songs...">
-            <ul id="songList" style="margin-top: 15px; list-style: none; padding: 0;"></ul>
-        </section>
+        <div class="side-grid">
+            <section class="card">
+                <h2>🎵 Songs</h2>
+                <div class="input-group">
+                    <input type="text" id="songTitle" placeholder="Title">
+                    <button onclick="addSong()" class="btn-primary" style="background:#27ae60; width:auto;">Add</button>
+                </div>
+                <ul id="songList"></ul>
+            </section>
+            <section class="card">
+                <h2>📚 Course</h2>
+                <div id="courseDisplay"></div>
+            </section>
+        </div>
+    </div>
 
-        <section class="card">
-            <h2>📚 Current Course</h2>
-            <div class="input-group">
-                <input type="text" id="courseTitle" placeholder="Course Name">
-                <input type="text" id="courseTime" placeholder="Meeting Time">
-                <input type="text" id="courseLink" placeholder="Material Link">
-                <button onclick="addCourse()" class="btn-primary" style="background-color: #3498db;">Update</button>
-            </div>
-            <div id="courseDisplay" style="margin-top: 20px;"></div>
-        </section>
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalBody">
+                </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
