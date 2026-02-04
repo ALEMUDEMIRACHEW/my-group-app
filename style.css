@@ -1,42 +1,193 @@
-body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f0f2f5; color: #333; line-height: 1.6; }
-nav { background: #2c3e50; color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-nav h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
+/* --- 1. BASE RESET --- */
+* {
+    box-sizing: border-box; /* Prevents padding from breaking width */
+}
 
-.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-.card { background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-h2 { margin-top: 0; color: #2c3e50; font-size: 1.3rem; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+body { 
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    margin: 0; 
+    background-color: #f0f2f5; 
+    color: #333; 
+    line-height: 1.6; 
+}
 
-/* SPINNER */
-.spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-left: 10px; }
+/* --- 2. NAVIGATION --- */
+nav { 
+    background: #2c3e50; 
+    color: white; 
+    padding: 20px; 
+    text-align: center; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
+}
+
+nav h1 { 
+    margin: 0; 
+    font-size: 1.6rem; 
+}
+
+.container { 
+    max-width: 1000px; 
+    margin: 0 auto; 
+    padding: 20px; 
+}
+
+/* --- 3. CARDS & SECTIONS --- */
+.card { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 12px; 
+    margin-bottom: 25px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+}
+
+h2 { 
+    margin-top: 0; 
+    color: #2c3e50; 
+    font-size: 1.2rem; 
+    border-bottom: 2px solid #f0f2f5; 
+    padding-bottom: 10px; 
+}
+
+/* --- 4. THE GRID FORM --- */
+.profile-grid-form { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; /* Two columns */
+    gap: 15px; 
+    background: #fdfdfd; 
+    padding: 20px; 
+    border-radius: 12px; 
+    border: 1px solid #eee; 
+    margin-bottom: 20px;
+}
+
+input, select { 
+    width: 100%; /* Fill the grid cell */
+    padding: 12px; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    font-size: 14px; 
+}
+
+.full-row { 
+    grid-column: span 2; 
+}
+
+/* --- 5. IMAGE UPLOAD & PREVIEW --- */
+.file-upload-wrapper { 
+    grid-column: span 2; 
+    background: #f8f9fa; 
+    padding: 20px; 
+    border: 2px dashed #cbd5e0; 
+    border-radius: 12px; 
+    text-align: center; 
+}
+
+#imagePreview { 
+    width: 110px; 
+    height: 110px; 
+    object-fit: cover; 
+    border-radius: 50%; 
+    margin-top: 10px; 
+    display: none; 
+    border: 3px solid #3498db; 
+}
+
+/* --- 6. LOADING & PROGRESS --- */
+.spinner { 
+    width: 18px; 
+    height: 18px; 
+    border: 3px solid rgba(255,255,255,0.3); 
+    border-radius: 50%; 
+    border-top-color: #fff; 
+    animation: spin 0.8s linear infinite; 
+    margin-left: 10px;
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* PROGRESS BAR */
-#uploadProgressContainer { width: 100%; background: #eee; border-radius: 10px; height: 10px; overflow: hidden; }
-#uploadProgressBar { width: 0%; height: 100%; background: #3498db; transition: width 0.3s; }
+#uploadProgressContainer { 
+    width: 100%; 
+    background: #eee; 
+    border-radius: 10px; 
+    height: 8px; 
+    margin-top: 10px;
+    overflow: hidden; 
+}
 
-/* FORMS */
-.profile-grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #fdfdfd; padding: 20px; border-radius: 12px; border: 1px solid #eee; }
-.full-row { grid-column: span 2; }
-.file-upload-wrapper { grid-column: span 2; background: #f8f9fa; padding: 15px; border: 2px dashed #cbd5e0; border-radius: 12px; text-align: center; }
-#imagePreview { width: 120px; height: 120px; object-fit: cover; border-radius: 50%; margin-top: 10px; display: none; border: 3px solid #3498db; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+#uploadProgressBar { 
+    width: 0%; 
+    height: 100%; 
+    background: #3498db; 
+    transition: width 0.4s ease; 
+}
 
-input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-.btn-primary { padding: 12px 20px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; justify-content: center; align-items: center; transition: background 0.2s; }
+/* --- 7. BUTTONS --- */
+.btn-primary { 
+    width: 100%;
+    padding: 14px; 
+    background: #3498db; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+}
+
 .btn-primary:hover { background: #2980b9; }
-.btn-primary:disabled { background: #bdc3c7; cursor: not-allowed; }
+.btn-primary:disabled { background: #bdc3c7; }
 
-/* LISTS */
-#memberList { padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; list-style: none; }
-.profile-card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; }
-.profile-card:hover { transform: translateY(-5px); }
-.role-badge { background: #e1f5fe; color: #01579b; padding: 4px 10px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-.delete-btn { margin-top:10px; color:#e74c3c; border:none; background:none; cursor:pointer; font-size:0.8em; font-weight:bold; }
+/* --- 8. MEMBER DIRECTORY TILES --- */
+#memberList { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+    gap: 20px; 
+    padding: 0; 
+    list-style: none; 
+}
 
-#songSearch { width: 100%; padding: 10px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd; }
-.song-item { background: #f9f9f9; margin: 8px 0; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; border-left: 5px solid #27ae60; }
-.course-badge { background:#f0f7ff; padding:15px; border-radius:8px; border-left:4px solid #3498db; }
+.profile-card { 
+    background: white; 
+    border-radius: 12px; 
+    overflow: hidden; 
+    border: 1px solid #eee; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+}
 
-@media (max-width: 600px) {
+.profile-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.role-badge { 
+    background: #e1f5fe; 
+    color: #01579b; 
+    padding: 4px 12px; 
+    border-radius: 50px; 
+    font-size: 0.7rem; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+}
+
+/* --- 9. SONGS & COURSES --- */
+#songSearch { width: 100%; margin: 10px 0; }
+
+.song-item { 
+    background: #f9f9f9; 
+    margin: 8px 0; 
+    padding: 12px; 
+    border-radius: 8px; 
+    display: flex; 
+    justify-content: space-between; 
+    border-left: 5px solid #27ae60; 
+}
+
+/* --- 10. RESPONSIVE --- */
+@media (max-width: 650px) {
     .profile-grid-form { grid-template-columns: 1fr; }
     .full-row { grid-column: span 1; }
+    nav h1 { font-size: 1.3rem; }
 }
