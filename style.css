@@ -1,6 +1,55 @@
-body { font-family: sans-serif; padding: 40px; background-color: #f4f4f4; }
-h1 { color: #2c3e50; }
-input { padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-button { padding: 10px; background: green; color: white; border: none; cursor: pointer; }
-ul { margin-top: 20px; }
-li { background: white; margin: 5px 0; padding: 10px; list-style: none; border-radius: 5px; }
+body { 
+    font-family: 'Segoe UI', sans-serif; 
+    margin: 0; 
+    background-color: #f0f2f5; 
+    color: #333;
+}
+
+nav { 
+    background: #2c3e50; 
+    color: white; 
+    padding: 10px; 
+    text-align: center; 
+}
+
+.container { padding: 15px; }
+
+.card { 
+    background: white; 
+    padding: 20px; 
+    border-radius: 12px; 
+    margin-bottom: 20px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+}
+
+h2 { margin-top: 0; color: #2c3e50; font-size: 1.2rem; }
+
+input { 
+    width: 70%; 
+    padding: 12px; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+}
+
+.btn-primary { 
+    padding: 12px; 
+    background: #3498db; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer;
+}
+
+ul { padding: 0; }
+
+li { 
+    background: #f9f9f9; 
+    margin: 8px 0; 
+    padding: 12px; 
+    border-radius: 8px; 
+    display: flex; 
+    justify-content: space-between;
+    border-left: 5px solid #3498db;
+}
+
+.link { color: #3498db; text-decoration: none; font-weight: bold; }
