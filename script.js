@@ -1,18 +1,27 @@
-window.onload = function() {
-    fetchMembers();
-    fetchSongs(); // This ensures songs load when you open the app
-};
-// 1. Your Supabase Connection Details
+// 1. Supabase Connection Details
 const supabaseUrl = 'https://rntxwnovbkmnqiylvqnq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJudHh3bm92YmttbnFpeWx2cW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTIwMjEsImV4cCI6MjA4NTc2ODAyMX0.QpO8mXj4rx0uJRyUM94YyIzm0pPRgl00DQvePOIrF04';
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Automatically load members when the page opens
+// Automatically load everything when the page opens
 window.onload = function() {
     fetchMembers();
+    fetchSongs();
+    fetchCourses();
 };
 
-// 2. SAVE a member to Supabase
+// --- MEMBER FUNCTIONS ---
+
+async function fetchMembers() {
+    let { data: members, error } = await _supabase
+        .from('members')
+        .select('*')
+        .order('id', { ascending: true });
+
+    if (error) console.error("Error fetching members:", error.message);
+    else displayMembers(members);
+}
+
 async function addMember() {
     let nameInput = document.getElementById('nameInput');
     let nameValue = nameInput.value.trim();
@@ -26,41 +35,23 @@ async function addMember() {
         .from('members')
         .insert([{ name: nameValue, is_present: false }]);
 
-    if (error) {
-        console.error("Error saving:", error.message);
-        alert("Error saving: " + error.message);
-    } else {
+    if (error) alert("Error saving: " + error.message);
+    else {
         nameInput.value = ""; 
         fetchMembers(); 
     }
 }
 
-// 3. GET all members from Supabase
-async function fetchMembers() {
-    let { data: members, error } = await _supabase
-        .from('members')
-        .select('*')
-        .order('id', { ascending: true });
-
-    if (error) {
-        console.error("Error fetching data:", error.message);
-    } else {
-        displayMembers(members);
-    }
-}
-
-// 4. DISPLAY members with Delete and Toggle features
 function displayMembers(members) {
     let memberList = document.getElementById('memberList');
     memberList.innerHTML = ""; 
 
     members.forEach(function(member) {
         let li = document.createElement('li');
-        // Simple styling to make it look organized
         li.style.display = "flex";
         li.style.justifyContent = "space-between";
         li.style.alignItems = "center";
-        li.style.padding = "5px 0";
+        li.style.padding = "10px";
         li.style.borderBottom = "1px solid #eee";
 
         li.innerHTML = `
@@ -79,83 +70,79 @@ function displayMembers(members) {
     });
 }
 
-// 5. UPDATE attendance status in the cloud
 async function toggleAttendance(id, currentStatus) {
     const { error } = await _supabase
         .from('members')
         .update({ is_present: !currentStatus })
         .eq('id', id);
 
-    if (error) {
-        alert("Error updating: " + error.message);
-    } else {
-        fetchMembers(); // Refresh the list
-    }
+    if (error) alert("Error updating: " + error.message);
+    else fetchMembers();
 }
 
-// 6. DELETE a member from the cloud
 async function deleteMember(id) {
     if (confirm("Delete this member?")) {
-        const { error } = await _supabase
-            .from('members')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            alert("Error deleting: " + error.message);
-        } else {
-            fetchMembers(); // Refresh the list
-        }
+        const { error } = await _supabase.from('members').delete().eq('id', id);
+        if (error) alert("Error deleting: " + error.message);
+        else fetchMembers();
     }
 }
+
 // --- SONG LIST FUNCTIONS ---
 
-// 1. Fetch songs from Supabase when page loads
 async function fetchSongs() {
     let { data: songs, error } = await _supabase
         .from('songs')
         .select('*')
         .order('id', { ascending: false });
 
-    if (error) console.error(error);
+    if (error) console.error("Error fetching songs:", error.message);
     else displaySongs(songs);
 }
 
-// 2. Add a new song to the cloud
 async function addSong() {
     const title = document.getElementById('songTitle').value;
+    const category = document.getElementById('songCategory').value; // Included Category
     const link = document.getElementById('songLink').value;
 
     if (!title) { alert("Enter a song title!"); return; }
 
     const { error } = await _supabase
         .from('songs')
-        .insert([{ title: title, link: link }]);
+        .insert([{ title: title, category: category, link: link }]);
 
     if (error) alert(error.message);
     else {
         document.getElementById('songTitle').value = "";
+        document.getElementById('songCategory').value = "";
         document.getElementById('songLink').value = "";
         fetchSongs();
     }
 }
 
-// 3. Display songs on the screen
 function displaySongs(songs) {
     const list = document.getElementById('songList');
     list.innerHTML = "";
     songs.forEach(song => {
         let li = document.createElement('li');
+        li.style.display = "flex";
+        li.style.justifyContent = "space-between";
+        li.style.padding = "10px";
+
         li.innerHTML = `
-            <strong>${song.title}</strong> 
-            ${song.link ? `<a href="${song.link}" target="_blank">🔗 View Link</a>` : ''}
-            <button onclick="deleteSong(${song.id})" style="color:red; background:none; border:none; float:right;">X</button>
+            <div>
+                <small style="color: #27ae60; font-weight: bold; display: block;">${song.category || 'General'}</small>
+                <strong>${song.title}</strong> 
+            </div>
+            <div>
+                ${song.link ? `<a href="${song.link}" target="_blank" style="margin-right:10px;">🔗 View</a>` : ''}
+                <button onclick="deleteSong(${song.id})" style="color:red; background:none; border:none; cursor:pointer;">[X]</button>
+            </div>
         `;
         list.appendChild(li);
     });
 }
 
-// 4. Delete a song
 async function deleteSong(id) {
     if(confirm("Delete this song?")) {
         await _supabase.from('songs').delete().eq('id', id);
@@ -163,8 +150,6 @@ async function deleteSong(id) {
     }
 }
 
-// Add this line inside your window.onload function so it loads songs too:
-// fetchSongs();
 // --- COURSE FUNCTIONS ---
 
 async function fetchCourses() {
@@ -174,7 +159,7 @@ async function fetchCourses() {
         .order('id', { ascending: false });
 
     if (!error && courses.length > 0) {
-        displayCourse(courses[0]); // Shows the most recent course added
+        displayCourse(courses[0]); 
     }
 }
 
@@ -189,19 +174,21 @@ async function addCourse() {
 
     if (error) alert(error.message);
     else {
-        fetchCourses(); // Refresh to show the new info
+        // Clear inputs after success
+        document.getElementById('courseTitle').value = "";
+        document.getElementById('courseTime').value = "";
+        document.getElementById('courseLink').value = "";
+        fetchCourses();
     }
 }
 
 function displayCourse(course) {
     const display = document.getElementById('courseDisplay');
     display.innerHTML = `
-        <div class="course-item">
-            <strong>${course.title}</strong>
-            <p>Next Meeting: ${course.meeting_time}</p>
+        <div class="course-item" style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h3 style="margin-top:0;">${course.title}</h3>
+            <p><strong>Next Meeting:</strong> ${course.meeting_time}</p>
             ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link">Download PDF Material</a>` : ''}
         </div>
     `;
 }
-
-// Don't forget to add fetchCourses(); inside your window.onload!
