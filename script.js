@@ -102,7 +102,7 @@ async function fetchSongs() {
 
 async function addSong() {
     const title = document.getElementById('songTitle').value;
-    const category = document.getElementById('songCategory').value; // Included Category
+    const category = document.getElementById('songCategory').value; 
     const link = document.getElementById('songLink').value;
 
     if (!title) { alert("Enter a song title!"); return; }
@@ -127,16 +127,20 @@ function displaySongs(songs) {
         let li = document.createElement('li');
         li.style.display = "flex";
         li.style.justifyContent = "space-between";
+        li.style.alignItems = "center";
         li.style.padding = "10px";
+        li.style.borderBottom = "1px solid #eee";
 
         li.innerHTML = `
             <div>
-                <small style="color: #27ae60; font-weight: bold; display: block;">${song.category || 'General'}</small>
-                <strong>${song.title}</strong> 
+                <span style="background: #e1f5fe; color: #01579b; padding: 2px 8px; border-radius: 4px; font-size: 0.7em; font-weight: bold; margin-bottom: 5px; display: inline-block;">
+                    ${song.category ? song.category.toUpperCase() : 'GENERAL'}
+                </span>
+                <strong style="display: block;">${song.title}</strong> 
             </div>
             <div>
-                ${song.link ? `<a href="${song.link}" target="_blank" style="margin-right:10px;">🔗 View</a>` : ''}
-                <button onclick="deleteSong(${song.id})" style="color:red; background:none; border:none; cursor:pointer;">[X]</button>
+                ${song.link ? `<a href="${song.link}" target="_blank" style="margin-right:10px; text-decoration: none;">🔗 View</a>` : ''}
+                <button onclick="deleteSong(${song.id})" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">[X]</button>
             </div>
         `;
         list.appendChild(li);
@@ -168,13 +172,14 @@ async function addCourse() {
     const time = document.getElementById('courseTime').value;
     const link = document.getElementById('courseLink').value;
 
+    if (!title) { alert("Enter a course title!"); return; }
+
     const { error } = await _supabase
         .from('courses')
         .insert([{ title: title, meeting_time: time, material_link: link }]);
 
     if (error) alert(error.message);
     else {
-        // Clear inputs after success
         document.getElementById('courseTitle').value = "";
         document.getElementById('courseTime').value = "";
         document.getElementById('courseLink').value = "";
@@ -185,10 +190,10 @@ async function addCourse() {
 function displayCourse(course) {
     const display = document.getElementById('courseDisplay');
     display.innerHTML = `
-        <div class="course-item" style="background: #f9f9f9; padding: 15px; border-radius: 8px;">
-            <h3 style="margin-top:0;">${course.title}</h3>
-            <p><strong>Next Meeting:</strong> ${course.meeting_time}</p>
-            ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link">Download PDF Material</a>` : ''}
+        <div class="course-item" style="background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 5px solid #3498db;">
+            <h3 style="margin-top:0; color: #2c3e50;">${course.title}</h3>
+            <p style="margin: 5px 0;"><strong>Next Meeting:</strong> ${course.meeting_time}</p>
+            ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link" style="color: #3498db; font-weight: bold;">Download PDF Material</a>` : ''}
         </div>
     `;
 }
