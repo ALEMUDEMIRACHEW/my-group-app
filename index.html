@@ -13,18 +13,22 @@
     <div class="container">
         <section class="card">
             <h2>Member Attendance</h2>
-            <input type="text" id="nameInput" placeholder="Member Name">
-            <button onclick="addMember()" class="btn-primary">Add Member</button>
+            <div class="input-group">
+                <input type="text" id="nameInput" placeholder="Member Name">
+                <button onclick="addMember()" class="btn-primary">Add Member</button>
+            </div>
             <ul id="memberList"></ul>
         </section>
 
         <section class="card">
             <h2>🎵 Song List to Study</h2>
-            <ul id="songList">
-                <li>1. Amazing Grace</li>
-                <li>2. How Great Thou Art</li>
-                <li>3. 10,000 Reasons</li>
-            </ul>
+            <div class="input-group">
+                <input type="text" id="songTitle" placeholder="Song Title">
+                <input type="text" id="songLink" placeholder="Link (YouTube/PDF)">
+                <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60; margin-top: 5px;">Add Song</button>
+            </div>
+            <ul id="songList" style="margin-top: 15px;">
+                </ul>
         </section>
 
         <section class="card">
