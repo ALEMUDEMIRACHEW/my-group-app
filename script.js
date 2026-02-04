@@ -35,7 +35,7 @@ async function addMember() {
         .from('members')
         .insert([{ name: nameValue, is_present: false }]);
 
-    if (error) alert("Error saving: " + error.message);
+    if (error) alert("Error saving member: " + error.message);
     else {
         nameInput.value = ""; 
         fetchMembers(); 
@@ -76,14 +76,14 @@ async function toggleAttendance(id, currentStatus) {
         .update({ is_present: !currentStatus })
         .eq('id', id);
 
-    if (error) alert("Error updating: " + error.message);
+    if (error) alert("Error updating attendance: " + error.message);
     else fetchMembers();
 }
 
 async function deleteMember(id) {
     if (confirm("Delete this member?")) {
         const { error } = await _supabase.from('members').delete().eq('id', id);
-        if (error) alert("Error deleting: " + error.message);
+        if (error) alert("Error deleting member: " + error.message);
         else fetchMembers();
     }
 }
@@ -101,9 +101,13 @@ async function fetchSongs() {
 }
 
 async function addSong() {
-    const title = document.getElementById('songTitle').value;
-    const category = document.getElementById('songCategory').value; 
-    const link = document.getElementById('songLink').value;
+    const titleInput = document.getElementById('songTitle');
+    const categoryInput = document.getElementById('songCategory');
+    const linkInput = document.getElementById('songLink');
+
+    const title = titleInput.value.trim();
+    const category = categoryInput.value.trim(); 
+    const link = linkInput.value.trim();
 
     if (!title) { alert("Enter a song title!"); return; }
 
@@ -111,11 +115,11 @@ async function addSong() {
         .from('songs')
         .insert([{ title: title, category: category, link: link }]);
 
-    if (error) alert(error.message);
+    if (error) alert("Error saving song: " + error.message);
     else {
-        document.getElementById('songTitle').value = "";
-        document.getElementById('songCategory').value = "";
-        document.getElementById('songLink').value = "";
+        titleInput.value = "";
+        categoryInput.value = "";
+        linkInput.value = "";
         fetchSongs();
     }
 }
@@ -149,8 +153,9 @@ function displaySongs(songs) {
 
 async function deleteSong(id) {
     if(confirm("Delete this song?")) {
-        await _supabase.from('songs').delete().eq('id', id);
-        fetchSongs();
+        const { error } = await _supabase.from('songs').delete().eq('id', id);
+        if (error) alert("Error deleting song: " + error.message);
+        else fetchSongs();
     }
 }
 
@@ -162,15 +167,20 @@ async function fetchCourses() {
         .select('*')
         .order('id', { ascending: false });
 
-    if (!error && courses.length > 0) {
-        displayCourse(courses[0]); 
+    if (error) console.error("Error fetching courses:", error.message);
+    else if (courses.length > 0) {
+        displayCourse(courses[0]); // Display the latest update
     }
 }
 
 async function addCourse() {
-    const title = document.getElementById('courseTitle').value;
-    const time = document.getElementById('courseTime').value;
-    const link = document.getElementById('courseLink').value;
+    const titleInput = document.getElementById('courseTitle');
+    const timeInput = document.getElementById('courseTime');
+    const linkInput = document.getElementById('courseLink');
+
+    const title = titleInput.value.trim();
+    const time = timeInput.value.trim();
+    const link = linkInput.value.trim();
 
     if (!title) { alert("Enter a course title!"); return; }
 
@@ -178,11 +188,11 @@ async function addCourse() {
         .from('courses')
         .insert([{ title: title, meeting_time: time, material_link: link }]);
 
-    if (error) alert(error.message);
+    if (error) alert("Error updating course: " + error.message);
     else {
-        document.getElementById('courseTitle').value = "";
-        document.getElementById('courseTime').value = "";
-        document.getElementById('courseLink').value = "";
+        titleInput.value = "";
+        timeInput.value = "";
+        linkInput.value = "";
         fetchCourses();
     }
 }
@@ -192,8 +202,8 @@ function displayCourse(course) {
     display.innerHTML = `
         <div class="course-item" style="background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 5px solid #3498db;">
             <h3 style="margin-top:0; color: #2c3e50;">${course.title}</h3>
-            <p style="margin: 5px 0;"><strong>Next Meeting:</strong> ${course.meeting_time}</p>
-            ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link" style="color: #3498db; font-weight: bold;">Download PDF Material</a>` : ''}
+            <p style="margin: 5px 0;"><strong>Next Meeting:</strong> ${course.meeting_time || 'TBD'}</p>
+            ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link" style="color: #3498db; font-weight: bold;">Download PDF Material</a>` : '<p style="font-size: 0.8em; color: gray;">No links attached</p>'}
         </div>
     `;
 }
