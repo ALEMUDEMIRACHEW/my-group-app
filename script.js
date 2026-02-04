@@ -9,20 +9,16 @@ window.onload = () => {
     fetchAnnouncement();
 };
 
-// --- IMAGE PREVIEW LOGIC ---
 function previewImage(event) {
     const reader = new FileReader();
     const preview = document.getElementById('imagePreview');
-    reader.onload = function() {
+    reader.onload = () => {
         preview.src = reader.result;
         preview.style.display = 'block';
     }
-    if (event.target.files[0]) {
-        reader.readAsDataURL(event.target.files[0]);
-    }
+    if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
 }
 
-// --- ANNOUNCEMENTS ---
 async function fetchAnnouncement() {
     let { data } = await _supabase.from('announcements').select('*').order('id', { ascending: false }).limit(1);
     if (data && data.length > 0) document.getElementById('announcementDisplay').innerText = data[0].content;
@@ -36,7 +32,6 @@ async function updateAnnouncement() {
     fetchAnnouncement();
 }
 
-// --- MEMBERS & PROFILES (WITH IMAGE UPLOAD) ---
 async function fetchMembers() {
     let { data: members } = await _supabase.from('members').select('*').order('name', { ascending: true });
     if (members) {
@@ -47,42 +42,39 @@ async function fetchMembers() {
 }
 
 async function addMember() {
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
     const submitBtn = document.getElementById('submitBtn');
+    const progressContainer = document.getElementById('uploadProgressContainer');
+    const progressBar = document.getElementById('uploadProgressBar');
     const fileInput = document.getElementById('photoFile');
     const file = fileInput.files[0];
-    let photoUrl = 'https://via.placeholder.com/150'; // Default
+    let photoUrl = 'https://via.placeholder.com/150';
 
-    if (!document.getElementById('nameInput').value) {
-        alert("Please enter a name");
-        return;
-    }
+    if (!document.getElementById('nameInput').value) { alert("Enter a name"); return; }
 
-    submitBtn.innerText = "Uploading...";
+    btnText.style.display = 'none';
+    btnSpinner.style.display = 'inline-block';
     submitBtn.disabled = true;
 
-    // 1. Upload Image to Storage Bucket
     if (file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        const filePath = `${fileName}`;
-
-        let { error: uploadError } = await _supabase.storage
-            .from('profile-photos') // MUST exist in your Supabase dashboard
-            .upload(filePath, file);
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '40%'; 
+        
+        const fileName = `${Date.now()}_${file.name}`;
+        const { error: uploadError } = await _supabase.storage.from('profile-photos').upload(fileName, file);
 
         if (uploadError) {
-            alert("Image upload failed: " + uploadError.message);
-            submitBtn.innerText = "Create Profile";
-            submitBtn.disabled = false;
+            alert("Upload failed: " + uploadError.message);
+            resetBtn();
             return;
         }
-
-        // 2. Get Public URL
-        const { data } = _supabase.storage.from('profile-photos').getPublicUrl(filePath);
+        
+        progressBar.style.width = '100%';
+        const { data } = _supabase.storage.from('profile-photos').getPublicUrl(fileName);
         photoUrl = data.publicUrl;
     }
 
-    // 3. Insert into Database
     const payload = {
         name: document.getElementById('nameInput').value,
         photo_url: photoUrl,
@@ -95,19 +87,20 @@ async function addMember() {
         is_present: false
     };
 
-    const { error } = await _supabase.from('members').insert([payload]);
+    await _supabase.from('members').insert([payload]);
     
-    if (error) {
-        alert("Error saving member: " + error.message);
-    } else {
-        // Reset Form
-        document.querySelectorAll('.profile-grid-form input, select').forEach(i => i.value = "");
-        document.getElementById('imagePreview').style.display = 'none';
-        fetchMembers();
+    document.querySelectorAll('.profile-grid-form input, select').forEach(i => i.value = "");
+    document.getElementById('imagePreview').style.display = 'none';
+    progressContainer.style.display = 'none';
+    progressBar.style.width = '0%';
+    resetBtn();
+    fetchMembers();
+
+    function resetBtn() {
+        btnText.style.display = 'inline-block';
+        btnSpinner.style.display = 'none';
+        submitBtn.disabled = false;
     }
-    
-    submitBtn.innerText = "Create Profile";
-    submitBtn.disabled = false;
 }
 
 function displayMembers(members) {
@@ -127,11 +120,10 @@ function displayMembers(members) {
                 <div style="font-size: 0.85em; color: #666; margin-top: 10px;">
                     <p style="margin:2px 0;">📍 ${m.location || 'N/A'}</p>
                     <p style="margin:2px 0;">💼 ${m.job_status || 'N/A'}</p>
-                    <p style="margin:2px 0;">🎯 ${m.activity || 'No current activity'}</p>
+                    <p style="margin:2px 0;">🎯 ${m.activity || 'No activity'}</p>
                 </div>
-                <button onclick="deleteMember(${m.id})" style="margin-top:10px; color:#e74c3c; border:none; background:none; cursor:pointer; font-size:0.8em; font-weight:bold;">[ Delete Profile ]</button>
-            </div>
-        `;
+                <button onclick="deleteMember(${m.id})" class="delete-btn">[ Delete Profile ]</button>
+            </div>`;
         list.appendChild(li);
     });
 }
@@ -142,25 +134,22 @@ async function toggleAttendance(id, status) {
 }
 
 async function deleteMember(id) {
-    if (confirm("Permanently delete this profile?")) {
+    if (confirm("Delete profile?")) {
         await _supabase.from('members').delete().eq('id', id);
         fetchMembers();
     }
 }
 
-// --- SONGS & COURSES ---
 async function fetchSongs() {
     let { data } = await _supabase.from('songs').select('*').order('id', { ascending: false });
     if (data) displaySongs(data);
 }
-
 function filterSongs() {
     const term = document.getElementById('songSearch').value.toLowerCase();
     document.querySelectorAll('#songList li').forEach(li => {
         li.style.display = li.innerText.toLowerCase().includes(term) ? "flex" : "none";
     });
 }
-
 async function addSong() {
     const title = document.getElementById('songTitle').value;
     const cat = document.getElementById('songCategory').value;
@@ -168,31 +157,28 @@ async function addSong() {
     await _supabase.from('songs').insert([{ title, category: cat, link }]);
     fetchSongs();
 }
-
 function displaySongs(songs) {
     const list = document.getElementById('songList');
     list.innerHTML = "";
     songs.forEach(s => {
         const li = document.createElement('li');
-        li.style = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
+        li.className = "song-item";
         li.innerHTML = `<div><strong>${s.title}</strong> <small>(${s.category})</small></div>
                         <div><a href="${s.link}" target="_blank">🔗</a></div>`;
         list.appendChild(li);
     });
 }
-
 async function fetchCourses() {
     let { data } = await _supabase.from('courses').select('*').order('id', { ascending: false }).limit(1);
     if (data && data.length > 0) {
         document.getElementById('courseDisplay').innerHTML = `
-            <div style="background:#f0f7ff; padding:15px; border-radius:8px; border-left:4px solid #3498db;">
+            <div class="course-badge">
                 <h3>${data[0].title}</h3>
                 <p>Time: ${data[0].meeting_time}</p>
                 <a href="${data[0].material_link}" target="_blank">View Material</a>
             </div>`;
     }
 }
-
 async function addCourse() {
     const title = document.getElementById('courseTitle').value;
     const time = document.getElementById('courseTime').value;

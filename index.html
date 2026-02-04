@@ -3,79 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Group Tracker Pro</title>
+    <title>ማህበረ ቅድስት ክርስቶስ ሰምራ - Tracker</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        /* Directory Layout Styles */
-        .profile-grid-form {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            background: #fdfdfd;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #eee;
-            margin-bottom: 20px;
-        }
-        .profile-grid-form input, .profile-grid-form select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-        .full-row { grid-column: span 2; }
-        
-        /* New File Upload Styling */
-        .file-upload-wrapper {
-            grid-column: span 2;
-            background: #f8f9fa;
-            padding: 15px;
-            border: 2px dashed #cbd5e0;
-            border-radius: 8px;
-            text-align: center;
-        }
-        #imagePreview {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 50%;
-            margin-top: 10px;
-            display: none; /* Hidden until image is picked */
-            border: 2px solid #3498db;
-        }
-
-        #memberList {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 0;
-            list-style: none;
-        }
-    </style>
 </head>
 <body>
     <nav>
-        <h1>Group Tracker</h1>
+        <h1>ማህበረ ቅድስት ክርስቶስ ሰምራ</h1>
     </nav>
 
     <div class="container">
-        <section class="card" style="background: #fffde7; border-left: 5px solid #fbc02d;">
+        <section class="card announcement-card">
             <h2>📢 Group Announcement</h2>
             <div class="input-group">
                 <input type="text" id="announcementInput" placeholder="Post a message to the group...">
                 <button onclick="updateAnnouncement()" class="btn-primary" style="background-color: #fbc02d; color: #333;">Post</button>
             </div>
-            <div id="announcementDisplay" style="margin-top: 15px; font-weight: bold; color: #5d4037;">
-                Loading...
-            </div>
+            <div id="announcementDisplay">Loading...</div>
         </section>
 
         <section class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>👥 Member Directory</h2>
-                <span id="headcount" class="role-badge" style="background: #e3f2fd; color: #1976d2;">
-                    Total: 0 | Present: 0
-                </span>
+                <span id="headcount" class="role-badge" style="background: #e3f2fd; color: #1976d2;">Total: 0 | Present: 0</span>
             </div>
 
             <div class="profile-grid-form">
@@ -93,12 +43,18 @@
                 <input type="text" id="activityInput" placeholder="Current Group Activity" class="full-row">
                 
                 <div class="file-upload-wrapper">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Member Photo</label>
+                    <label>Member Photo</label>
                     <input type="file" id="photoFile" accept="image/*" onchange="previewImage(event)">
+                    <div id="uploadProgressContainer" style="display:none; margin-top:10px;">
+                        <div id="uploadProgressBar"></div>
+                    </div>
                     <center><img id="imagePreview" src=""></center>
                 </div>
 
-                <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">Create Profile</button>
+                <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">
+                    <span id="btnText">Create Profile</span>
+                    <div id="btnSpinner" class="spinner" style="display:none;"></div>
+                </button>
             </div>
 
             <ul id="memberList"></ul>
@@ -112,7 +68,7 @@
                 <input type="text" id="songLink" placeholder="Link">
                 <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60;">Add Song</button>
             </div>
-            <input type="text" id="songSearch" onkeyup="filterSongs()" placeholder="🔍 Search songs..." style="width: 100%; padding: 10px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <input type="text" id="songSearch" onkeyup="filterSongs()" placeholder="🔍 Search songs...">
             <ul id="songList" style="margin-top: 15px; list-style: none; padding: 0;"></ul>
         </section>
 
