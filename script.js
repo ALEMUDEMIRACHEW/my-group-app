@@ -1,3 +1,7 @@
+window.onload = function() {
+    fetchMembers();
+    fetchSongs(); // This ensures songs load when you open the app
+};
 // 1. Your Supabase Connection Details
 const supabaseUrl = 'https://rntxwnovbkmnqiylvqnq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJudHh3bm92YmttbnFpeWx2cW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTIwMjEsImV4cCI6MjA4NTc2ODAyMX0.QpO8mXj4rx0uJRyUM94YyIzm0pPRgl00DQvePOIrF04';
@@ -104,3 +108,60 @@ async function deleteMember(id) {
         }
     }
 }
+// --- SONG LIST FUNCTIONS ---
+
+// 1. Fetch songs from Supabase when page loads
+async function fetchSongs() {
+    let { data: songs, error } = await _supabase
+        .from('songs')
+        .select('*')
+        .order('id', { ascending: false });
+
+    if (error) console.error(error);
+    else displaySongs(songs);
+}
+
+// 2. Add a new song to the cloud
+async function addSong() {
+    const title = document.getElementById('songTitle').value;
+    const link = document.getElementById('songLink').value;
+
+    if (!title) { alert("Enter a song title!"); return; }
+
+    const { error } = await _supabase
+        .from('songs')
+        .insert([{ title: title, link: link }]);
+
+    if (error) alert(error.message);
+    else {
+        document.getElementById('songTitle').value = "";
+        document.getElementById('songLink').value = "";
+        fetchSongs();
+    }
+}
+
+// 3. Display songs on the screen
+function displaySongs(songs) {
+    const list = document.getElementById('songList');
+    list.innerHTML = "";
+    songs.forEach(song => {
+        let li = document.createElement('li');
+        li.innerHTML = `
+            <strong>${song.title}</strong> 
+            ${song.link ? `<a href="${song.link}" target="_blank">🔗 View Link</a>` : ''}
+            <button onclick="deleteSong(${song.id})" style="color:red; background:none; border:none; float:right;">X</button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+// 4. Delete a song
+async function deleteSong(id) {
+    if(confirm("Delete this song?")) {
+        await _supabase.from('songs').delete().eq('id', id);
+        fetchSongs();
+    }
+}
+
+// Add this line inside your window.onload function so it loads songs too:
+// fetchSongs();
