@@ -1,266 +1,144 @@
-// 1. Supabase Connection Details
 const supabaseUrl = 'https://rntxwnovbkmnqiylvqnq.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJudHh3bm92YmttbnFpeWx2cW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTIwMjEsImV4cCI6MjA4NTc2ODAyMX0.QpO8mXj4rx0uJRyUM94YyIzm0pPRgl00DQvePOIrF04';
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Automatically load everything when the page opens
-window.onload = function() {
+window.onload = () => {
     fetchMembers();
     fetchSongs();
     fetchCourses();
-    fetchAnnouncement(); // Added for announcements
+    fetchAnnouncement();
 };
 
-// --- ANNOUNCEMENT FUNCTIONS ---
-
+// ANNOUNCEMENTS
 async function fetchAnnouncement() {
-    let { data, error } = await _supabase
-        .from('announcements')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(1);
-
-    const display = document.getElementById('announcementDisplay');
-    if (error) console.error("Error fetching announcement:", error.message);
-    else if (data.length > 0) {
-        display.innerText = data[0].content;
-    } else {
-        display.innerText = "No current announcements.";
-    }
+    let { data } = await _supabase.from('announcements').select('*').order('id', { ascending: false }).limit(1);
+    if (data && data.length > 0) document.getElementById('announcementDisplay').innerText = data[0].content;
 }
 
 async function updateAnnouncement() {
-    const input = document.getElementById('announcementInput');
-    const content = input.value.trim();
-
-    if (!content) { alert("Please type something first!"); return; }
-
-    const { error } = await _supabase
-        .from('announcements')
-        .insert([{ content: content }]);
-
-    if (error) alert("Error posting: " + error.message);
-    else {
-        input.value = "";
-        fetchAnnouncement();
-    }
+    const val = document.getElementById('announcementInput').value;
+    if (!val) return;
+    await _supabase.from('announcements').insert([{ content: val }]);
+    document.getElementById('announcementInput').value = "";
+    fetchAnnouncement();
 }
 
-// --- MEMBER FUNCTIONS ---
-
+// MEMBERS & PROFILES
 async function fetchMembers() {
-    let { data: members, error } = await _supabase
-        .from('members')
-        .select('*')
-        .order('id', { ascending: true });
-
-    if (error) console.error("Error fetching members:", error.message);
-    else {
+    let { data: members } = await _supabase.from('members').select('*').order('name', { ascending: true });
+    if (members) {
         displayMembers(members);
-        updateHeadcount(members); // Update the counter
+        const present = members.filter(m => m.is_present).length;
+        document.getElementById('headcount').innerText = `Total: ${members.length} | Present: ${present}`;
     }
-}
-
-function updateHeadcount(members) {
-    const total = members.length;
-    const present = members.filter(m => m.is_present).length;
-    document.getElementById('headcount').innerText = `Total: ${total} | Present: ${present}`;
 }
 
 async function addMember() {
-    let nameInput = document.getElementById('nameInput');
-    let nameValue = nameInput.value.trim();
-
-    if (nameValue === "") { alert("Please type a name!"); return; }
-
-    const { error } = await _supabase
-        .from('members')
-        .insert([{ name: nameValue, is_present: false }]);
-
-    if (error) alert("Error saving member: " + error.message);
-    else {
-        nameInput.value = ""; 
-        fetchMembers(); 
-    }
+    const payload = {
+        name: document.getElementById('nameInput').value,
+        photo_url: document.getElementById('photoUrl').value || 'https://via.placeholder.com/150',
+        age: document.getElementById('ageInput').value,
+        job_status: document.getElementById('jobInput').value,
+        marital_status: document.getElementById('maritalInput').value,
+        location: document.getElementById('locationInput').value,
+        role: document.getElementById('roleInput').value,
+        activity: document.getElementById('activityInput').value,
+        is_present: false
+    };
+    await _supabase.from('members').insert([payload]);
+    document.querySelectorAll('.profile-grid-form input, select').forEach(i => i.value = "");
+    fetchMembers();
 }
 
 function displayMembers(members) {
-    let memberList = document.getElementById('memberList');
-    memberList.innerHTML = ""; 
-
-    members.forEach(function(member) {
-        let li = document.createElement('li');
-        li.style.display = "flex";
-        li.style.justifyContent = "space-between";
-        li.style.alignItems = "center";
-        li.style.padding = "10px";
-        li.style.borderBottom = "1px solid #eee";
-
-        li.innerHTML = `
-            <span>${member.name}</span> 
-            <div>
-                <input type="checkbox" ${member.is_present ? 'checked' : ''} 
-                    onclick="toggleAttendance(${member.id}, ${member.is_present})"> 
-                <span style="font-size: 0.8em; margin-right: 10px;">Present</span>
-                <button onclick="deleteMember(${member.id})" 
-                    style="color: red; border: none; background: none; cursor: pointer; font-weight: bold;">
-                    [X]
-                </button>
-            </div>
-        `;
-        memberList.appendChild(li);
-    });
-}
-
-async function toggleAttendance(id, currentStatus) {
-    const { error } = await _supabase
-        .from('members')
-        .update({ is_present: !currentStatus })
-        .eq('id', id);
-
-    if (error) alert("Error updating attendance: " + error.message);
-    else fetchMembers();
-}
-
-async function deleteMember(id) {
-    if (confirm("Delete this member?")) {
-        const { error } = await _supabase.from('members').delete().eq('id', id);
-        if (error) alert("Error deleting member: " + error.message);
-        else fetchMembers();
-    }
-}
-
-// --- SONG LIST FUNCTIONS ---
-
-async function fetchSongs() {
-    let { data: songs, error } = await _supabase
-        .from('songs')
-        .select('*')
-        .order('id', { ascending: false });
-
-    if (error) console.error("Error fetching songs:", error.message);
-    else displaySongs(songs);
-}
-
-// Search Filter Logic
-function filterSongs() {
-    const searchTerm = document.getElementById('songSearch').value.toLowerCase();
-    const listItems = document.querySelectorAll('#songList li');
-
-    listItems.forEach(li => {
-        const text = li.innerText.toLowerCase();
-        if (text.includes(searchTerm)) {
-            li.style.display = "flex";
-        } else {
-            li.style.display = "none";
-        }
-    });
-}
-
-async function addSong() {
-    const titleInput = document.getElementById('songTitle');
-    const categoryInput = document.getElementById('songCategory');
-    const linkInput = document.getElementById('songLink');
-
-    const title = titleInput.value.trim();
-    const category = categoryInput.value.trim(); 
-    const link = linkInput.value.trim();
-
-    if (!title) { alert("Enter a song title!"); return; }
-
-    const { error } = await _supabase
-        .from('songs')
-        .insert([{ title: title, category: category, link: link }]);
-
-    if (error) alert("Error saving song: " + error.message);
-    else {
-        titleInput.value = "";
-        categoryInput.value = "";
-        linkInput.value = "";
-        fetchSongs();
-    }
-}
-
-function displaySongs(songs) {
-    const list = document.getElementById('songList');
+    const list = document.getElementById('memberList');
     list.innerHTML = "";
-    songs.forEach(song => {
-        let li = document.createElement('li');
-        li.style.display = "flex";
-        li.style.justifyContent = "space-between";
-        li.style.alignItems = "center";
-        li.style.padding = "10px";
-        li.style.borderBottom = "1px solid #eee";
-
+    members.forEach(m => {
+        const li = document.createElement('li');
+        li.className = "profile-card"; // Apply CSS styles
+        li.style = "background: white; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);";
         li.innerHTML = `
-            <div>
-                <span style="background: #e1f5fe; color: #01579b; padding: 2px 8px; border-radius: 4px; font-size: 0.7em; font-weight: bold; margin-bottom: 5px; display: inline-block;">
-                    ${song.category ? song.category.toUpperCase() : 'GENERAL'}
-                </span>
-                <strong style="display: block;">${song.title}</strong> 
-            </div>
-            <div>
-                ${song.link ? `<a href="${song.link}" target="_blank" style="margin-right:10px; text-decoration: none;">🔗 View</a>` : ''}
-                <button onclick="deleteSong(${song.id})" style="color:red; background:none; border:none; cursor:pointer; font-weight:bold;">[X]</button>
+            <img src="${m.photo_url}" style="width: 100%; height: 160px; object-fit: cover;">
+            <div style="padding: 15px;">
+                <div style="display:flex; justify-content:space-between;">
+                    <h3 style="margin:0;">${m.name}</h3>
+                    <input type="checkbox" ${m.is_present ? 'checked' : ''} onclick="toggleAttendance(${m.id}, ${m.is_present})">
+                </div>
+                <span class="role-badge" style="font-size:0.7em; background:#e1f5fe; padding:2px 8px; border-radius:10px;">${m.role || 'Member'}</span>
+                <div style="font-size: 0.8em; color: #666; margin-top: 10px;">
+                    <p>📍 ${m.location || 'N/A'}</p>
+                    <p>💼 ${m.job_status || 'N/A'}</p>
+                    <p>🎯 ${m.activity || 'No current activity'}</p>
+                </div>
+                <button onclick="deleteMember(${m.id})" style="margin-top:10px; color:red; border:none; background:none; cursor:pointer; font-size:0.7em;">Remove</button>
             </div>
         `;
         list.appendChild(li);
     });
 }
 
-async function deleteSong(id) {
-    if(confirm("Delete this song?")) {
-        const { error } = await _supabase.from('songs').delete().eq('id', id);
-        if (error) alert("Error deleting song: " + error.message);
-        else fetchSongs();
+async function toggleAttendance(id, status) {
+    await _supabase.from('members').update({ is_present: !status }).eq('id', id);
+    fetchMembers();
+}
+
+async function deleteMember(id) {
+    if (confirm("Delete profile?")) {
+        await _supabase.from('members').delete().eq('id', id);
+        fetchMembers();
     }
 }
 
-// --- COURSE FUNCTIONS ---
+// SONGS
+async function fetchSongs() {
+    let { data } = await _supabase.from('songs').select('*').order('id', { ascending: false });
+    if (data) displaySongs(data);
+}
 
+function filterSongs() {
+    const term = document.getElementById('songSearch').value.toLowerCase();
+    document.querySelectorAll('#songList li').forEach(li => {
+        li.style.display = li.innerText.toLowerCase().includes(term) ? "flex" : "none";
+    });
+}
+
+async function addSong() {
+    const title = document.getElementById('songTitle').value;
+    const cat = document.getElementById('songCategory').value;
+    const link = document.getElementById('songLink').value;
+    await _supabase.from('songs').insert([{ title, category: cat, link }]);
+    fetchSongs();
+}
+
+function displaySongs(songs) {
+    const list = document.getElementById('songList');
+    list.innerHTML = "";
+    songs.forEach(s => {
+        const li = document.createElement('li');
+        li.style = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
+        li.innerHTML = `<div><strong>${s.title}</strong> <small>(${s.category})</small></div>
+                        <div><a href="${s.link}" target="_blank">🔗</a></div>`;
+        list.appendChild(li);
+    });
+}
+
+// COURSES
 async function fetchCourses() {
-    let { data: courses, error } = await _supabase
-        .from('courses')
-        .select('*')
-        .order('id', { ascending: false });
-
-    if (error) console.error("Error fetching courses:", error.message);
-    else if (courses.length > 0) {
-        displayCourse(courses[0]); 
+    let { data } = await _supabase.from('courses').select('*').order('id', { ascending: false }).limit(1);
+    if (data && data.length > 0) {
+        document.getElementById('courseDisplay').innerHTML = `
+            <div style="background:#f0f7ff; padding:15px; border-radius:8px; border-left:4px solid #3498db;">
+                <h3>${data[0].title}</h3>
+                <p>Time: ${data[0].meeting_time}</p>
+                <a href="${data[0].material_link}" target="_blank">View Material</a>
+            </div>`;
     }
 }
 
 async function addCourse() {
-    const titleInput = document.getElementById('courseTitle');
-    const timeInput = document.getElementById('courseTime');
-    const linkInput = document.getElementById('courseLink');
-
-    const title = titleInput.value.trim();
-    const time = timeInput.value.trim();
-    const link = linkInput.value.trim();
-
-    if (!title) { alert("Enter a course title!"); return; }
-
-    const { error } = await _supabase
-        .from('courses')
-        .insert([{ title: title, meeting_time: time, material_link: link }]);
-
-    if (error) alert("Error updating course: " + error.message);
-    else {
-        titleInput.value = "";
-        timeInput.value = "";
-        linkInput.value = "";
-        fetchCourses();
-    }
-}
-
-function displayCourse(course) {
-    const display = document.getElementById('courseDisplay');
-    display.innerHTML = `
-        <div class="course-item" style="background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 5px solid #3498db;">
-            <h3 style="margin-top:0; color: #2c3e50;">${course.title}</h3>
-            <p style="margin: 5px 0;"><strong>Next Meeting:</strong> ${course.meeting_time || 'TBD'}</p>
-            ${course.material_link ? `<a href="${course.material_link}" target="_blank" class="link" style="color: #3498db; font-weight: bold;">Download PDF Material</a>` : '<p style="font-size: 0.8em; color: gray;">No links attached</p>'}
-        </div>
-    `;
+    const title = document.getElementById('courseTitle').value;
+    const time = document.getElementById('courseTime').value;
+    const link = document.getElementById('courseLink').value;
+    await _supabase.from('courses').insert([{ title, meeting_time: time, material_link: link }]);
+    fetchCourses();
 }

@@ -1,82 +1,143 @@
+/* --- GLOBAL STYLES --- */
 body { 
-    font-family: 'Segoe UI', sans-serif; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     margin: 0; 
     background-color: #f0f2f5; 
     color: #333;
+    line-height: 1.6;
 }
 
 nav { 
     background: #2c3e50; 
     color: white; 
-    padding: 10px; 
+    padding: 15px; 
     text-align: center; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.container { padding: 15px; }
+.container { 
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px; 
+}
 
+/* --- CARD COMPONENT --- */
 .card { 
     background: white; 
-    padding: 20px; 
+    padding: 25px; 
     border-radius: 12px; 
-    margin-bottom: 20px; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+    margin-bottom: 25px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
 }
 
-h2 { margin-top: 0; color: #2c3e50; font-size: 1.2rem; }
-
-input { 
-    width: 70%; 
-    padding: 12px; 
-    border: 1px solid #ddd; 
-    border-radius: 8px; 
+h2 { 
+    margin-top: 0; 
+    color: #2c3e50; 
+    font-size: 1.3rem;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 10px;
 }
 
-.btn-primary { 
-    padding: 12px; 
-    background: #3498db; 
-    color: white; 
-    border: none; 
-    border-radius: 8px; 
-    cursor: pointer;
-}
-
-ul { padding: 0; }
-
-li { 
-    background: #f9f9f9; 
-    margin: 8px 0; 
-    padding: 12px; 
-    border-radius: 8px; 
-    display: flex; 
-    justify-content: space-between;
-    border-left: 5px solid #3498db;
-}
-
-.link { color: #3498db; text-decoration: none; font-weight: bold; }
-/* Paste this at the end of your style.css file */
-
-li {
-    background: white;
-    margin: 10px 0;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.btn-primary {
-    cursor: pointer;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-}
-
+/* --- FORM & INPUT GROUPS --- */
 .input-group {
     display: flex;
     flex-direction: column;
     gap: 10px;
     margin-bottom: 15px;
+}
+
+.profile-grid-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: #fdfdfd;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+input, select { 
+    padding: 12px; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    font-size: 14px;
+}
+
+.full-row { grid-column: span 2; }
+
+.btn-primary { 
+    padding: 12px 20px; 
+    background: #3498db; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+/* --- MEMBER GRID & PROFILE CARDS --- */
+#memberList { 
+    padding: 0; 
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    list-style: none;
+}
+
+#memberList li { 
+    background: white; 
+    margin: 0; 
+    padding: 0; /* Removing padding here because the card has internal padding */
+    border-radius: 12px; 
+    display: block; /* Overriding the old flex-row display */
+    overflow: hidden;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+#memberList li:hover {
+    transform: translateY(-5px);
+}
+
+.role-badge {
+    background: #e1f5fe;
+    color: #01579b;
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    display: inline-block;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* --- SONG & COURSE LISTS --- */
+#songList { list-style: none; padding: 0; }
+
+#songList li {
+    background: #f9f9f9;
+    margin: 8px 0;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid #27ae60; /* Green for songs */
+}
+
+.link { color: #3498db; text-decoration: none; font-weight: bold; }
+
+/* --- RESPONSIVE DESIGN --- */
+@media (max-width: 600px) {
+    .profile-grid-form {
+        grid-template-columns: 1fr;
+    }
+    .full-row {
+        grid-column: span 1;
+    }
 }

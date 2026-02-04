@@ -1,9 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Group Tracker Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Directory Layout Styles */
+        .profile-grid-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: #fdfdfd;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        .profile-grid-form input, .profile-grid-form select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .full-row { grid-column: span 2; }
+        
+        #memberList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 0;
+            list-style: none;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -14,43 +43,52 @@
         <section class="card" style="background: #fffde7; border-left: 5px solid #fbc02d;">
             <h2>📢 Group Announcement</h2>
             <div class="input-group">
-                <input type="text" id="announcementInput" placeholder="New announcement...">
+                <input type="text" id="announcementInput" placeholder="Post a message to the group...">
                 <button onclick="updateAnnouncement()" class="btn-primary" style="background-color: #fbc02d; color: #333;">Post</button>
             </div>
-            <div id="announcementDisplay" style="margin-top: 15px; font-weight: bold; font-size: 1.1em; color: #5d4037;">
-                Loading announcement...
+            <div id="announcementDisplay" style="margin-top: 15px; font-weight: bold; color: #5d4037;">
+                Loading...
             </div>
         </section>
 
         <section class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>Member Attendance</h2>
-                <span id="headcount" style="background: #e3f2fd; color: #1976d2; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>👥 Member Directory</h2>
+                <span id="headcount" class="role-badge" style="background: #e3f2fd; color: #1976d2;">
                     Total: 0 | Present: 0
                 </span>
             </div>
-            <div class="input-group">
-                <input type="text" id="nameInput" placeholder="Member Name">
-                <button onclick="addMember()" class="btn-primary">Add Member</button>
+
+            <div class="profile-grid-form">
+                <input type="text" id="nameInput" placeholder="Full Name">
+                <input type="text" id="photoUrl" placeholder="Photo URL (Link)">
+                <input type="number" id="ageInput" placeholder="Age">
+                <input type="text" id="jobInput" placeholder="Job Status">
+                <select id="maritalInput">
+                    <option value="" disabled selected>Marital Status</option>
+                    <option value="Single">Single</option>
+                    <option value="Married">Married</option>
+                    <option value="Widowed">Widowed</option>
+                </select>
+                <input type="text" id="locationInput" placeholder="Location">
+                <input type="text" id="roleInput" placeholder="Group Role (e.g. Leader)">
+                <input type="text" id="activityInput" placeholder="Current Group Activity" class="full-row">
+                <button onclick="addMember()" class="btn-primary full-row">Create Profile</button>
             </div>
-            <ul id="memberList" style="margin-top: 15px;"></ul>
+
+            <ul id="memberList"></ul>
         </section>
 
         <section class="card">
             <h2>🎵 Song List to Study</h2>
             <div class="input-group">
                 <input type="text" id="songTitle" placeholder="Song Title">
-                <input type="text" id="songCategory" placeholder="Category (Worship/Praise)">
-                <input type="text" id="songLink" placeholder="Link (YouTube/PDF)">
+                <input type="text" id="songCategory" placeholder="Category">
+                <input type="text" id="songLink" placeholder="Link">
                 <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60;">Add Song</button>
             </div>
-            
-            <div style="margin-top: 20px; position: relative;">
-                <input type="text" id="songSearch" onkeyup="filterSongs()" placeholder="🔍 Search songs by title or category..." 
-                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
-            </div>
-
-            <ul id="songList" style="margin-top: 15px;"></ul>
+            <input type="text" id="songSearch" onkeyup="filterSongs()" placeholder="🔍 Search songs..." style="width: 100%; padding: 10px; margin-top: 15px; border-radius: 8px; border: 1px solid #ddd;">
+            <ul id="songList" style="margin-top: 15px; list-style: none; padding: 0;"></ul>
         </section>
 
         <section class="card">
@@ -58,12 +96,10 @@
             <div class="input-group">
                 <input type="text" id="courseTitle" placeholder="Course Name">
                 <input type="text" id="courseTime" placeholder="Meeting Time">
-                <input type="text" id="courseLink" placeholder="PDF/Material Link">
-                <button onclick="addCourse()" class="btn-primary" style="background-color: #3498db;">Update Course</button>
+                <input type="text" id="courseLink" placeholder="Material Link">
+                <button onclick="addCourse()" class="btn-primary" style="background-color: #3498db;">Update</button>
             </div>
-            <div id="courseDisplay" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
-                <p style="color: gray;">Loading course info...</p>
-            </div>
+            <div id="courseDisplay" style="margin-top: 20px;"></div>
         </section>
     </div>
 
