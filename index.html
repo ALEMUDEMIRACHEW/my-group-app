@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ማህበረ ቅድስት ክርስቶስ ሰምራ - Tracker</title>
+    <title>ማህበረ ቅድስት ክርስቶስ ሰምራ - Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -15,35 +15,31 @@
     <div class="container">
         <section class="card">
             <h2>📢 Group Announcement</h2>
+            <div id="announcementDisplay">Loading...</div>
             <div class="input-group">
-                <input type="text" id="announcementInput" placeholder="New announcement...">
-                <button onclick="updateAnnouncement()" class="btn-primary" style="background:#fbc02d; color:#333; width:auto;">Post</button>
+                <input type="text" id="announcementInput" placeholder="Update message...">
+                <button onclick="updateAnnouncement()" class="btn-primary" style="width:auto; background:#fbc02d; color:#333;">Post</button>
             </div>
-            <div id="announcementDisplay" style="margin-top:10px; font-weight:bold;">Loading...</div>
         </section>
 
         <section class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                 <h2>👥 Member Directory</h2>
-                <span id="headcount" class="role-badge">Total: 0 | Present: 0</span>
+                <span id="headcount" class="role-badge">Total: 0</span>
             </div>
+            
+            <ul id="memberList" class="member-grid"></ul>
 
-            <details style="margin-bottom: 20px; border: 1px solid #eee; border-radius: 8px; padding: 10px;">
-                <summary style="cursor:pointer; font-weight:bold; color:#3498db;">+ Add New Member Profile</summary>
-                <div class="profile-grid-form" style="margin-top:15px;">
+            <div class="add-section">
+                <h3>+ Add New Profile</h3>
+                <div class="profile-grid-form">
                     <input type="text" id="nameInput" placeholder="Full Name">
+                    <input type="text" id="roleInput" placeholder="Role (e.g. Leader)">
                     <input type="number" id="ageInput" placeholder="Age">
-                    <input type="text" id="jobInput" placeholder="Job Status">
-                    <select id="maritalInput">
-                        <option value="" disabled selected>Marital Status</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
-                    </select>
                     <input type="text" id="locationInput" placeholder="Location">
-                    <input type="text" id="roleInput" placeholder="Group Role">
-                    <input type="text" id="activityInput" placeholder="Activity" class="full-row">
                     <div class="file-upload-wrapper">
                         <input type="file" id="photoFile" accept="image/*" onchange="previewImage(event)">
+                        <div id="uploadProgressContainer" style="display:none; margin-top:10px;"><div id="uploadProgressBar"></div></div>
                         <center><img id="imagePreview" src=""></center>
                     </div>
                     <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">
@@ -51,35 +47,9 @@
                         <div id="btnSpinner" class="spinner" style="display:none;"></div>
                     </button>
                 </div>
-            </details>
-
-            <ul id="memberList"></ul>
+            </div>
         </section>
-
-        <div class="side-grid">
-            <section class="card">
-                <h2>🎵 Songs</h2>
-                <div class="input-group">
-                    <input type="text" id="songTitle" placeholder="Title">
-                    <button onclick="addSong()" class="btn-primary" style="background:#27ae60; width:auto;">Add</button>
-                </div>
-                <ul id="songList"></ul>
-            </section>
-            <section class="card">
-                <h2>📚 Course</h2>
-                <div id="courseDisplay"></div>
-            </section>
-        </div>
     </div>
-
-    <div id="memberModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <div id="modalBody">
-                </div>
-        </div>
-    </div>
-
     <script src="script.js"></script>
 </body>
 </html>
