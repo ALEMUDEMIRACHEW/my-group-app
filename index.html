@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Group Tracker</title>
+    <title>Group Tracker Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,23 +11,45 @@
     </nav>
 
     <div class="container">
+        <section class="card" style="background: #fffde7; border-left: 5px solid #fbc02d;">
+            <h2>📢 Group Announcement</h2>
+            <div class="input-group">
+                <input type="text" id="announcementInput" placeholder="New announcement...">
+                <button onclick="updateAnnouncement()" class="btn-primary" style="background-color: #fbc02d; color: #333;">Post</button>
+            </div>
+            <div id="announcementDisplay" style="margin-top: 15px; font-weight: bold; font-size: 1.1em; color: #5d4037;">
+                Loading announcement...
+            </div>
+        </section>
+
         <section class="card">
-            <h2>Member Attendance</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Member Attendance</h2>
+                <span id="headcount" style="background: #e3f2fd; color: #1976d2; padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold;">
+                    Total: 0 | Present: 0
+                </span>
+            </div>
             <div class="input-group">
                 <input type="text" id="nameInput" placeholder="Member Name">
                 <button onclick="addMember()" class="btn-primary">Add Member</button>
             </div>
-            <ul id="memberList"></ul>
+            <ul id="memberList" style="margin-top: 15px;"></ul>
         </section>
 
         <section class="card">
             <h2>🎵 Song List to Study</h2>
             <div class="input-group">
                 <input type="text" id="songTitle" placeholder="Song Title">
-                <input type="text" id="songCategory" placeholder="Category (e.g. Worship, Praise)">
+                <input type="text" id="songCategory" placeholder="Category (Worship/Praise)">
                 <input type="text" id="songLink" placeholder="Link (YouTube/PDF)">
-                <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60; margin-top: 5px;">Add Song</button>
+                <button onclick="addSong()" class="btn-primary" style="background-color: #27ae60;">Add Song</button>
             </div>
+            
+            <div style="margin-top: 20px; position: relative;">
+                <input type="text" id="songSearch" onkeyup="filterSongs()" placeholder="🔍 Search songs by title or category..." 
+                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+            </div>
+
             <ul id="songList" style="margin-top: 15px;"></ul>
         </section>
 
@@ -35,11 +57,10 @@
             <h2>📚 Current Course</h2>
             <div class="input-group">
                 <input type="text" id="courseTitle" placeholder="Course Name">
-                <input type="text" id="courseTime" placeholder="Meeting Time (e.g. Mon 7pm)">
+                <input type="text" id="courseTime" placeholder="Meeting Time">
                 <input type="text" id="courseLink" placeholder="PDF/Material Link">
-                <button onclick="addCourse()" class="btn-primary" style="background-color: #3498db; margin-top: 5px;">Update Course Info</button>
+                <button onclick="addCourse()" class="btn-primary" style="background-color: #3498db;">Update Course</button>
             </div>
-            
             <div id="courseDisplay" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;">
                 <p style="color: gray;">Loading course info...</p>
             </div>

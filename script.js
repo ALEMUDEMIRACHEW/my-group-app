@@ -8,7 +8,43 @@ window.onload = function() {
     fetchMembers();
     fetchSongs();
     fetchCourses();
+    fetchAnnouncement(); // Added for announcements
 };
+
+// --- ANNOUNCEMENT FUNCTIONS ---
+
+async function fetchAnnouncement() {
+    let { data, error } = await _supabase
+        .from('announcements')
+        .select('*')
+        .order('id', { ascending: false })
+        .limit(1);
+
+    const display = document.getElementById('announcementDisplay');
+    if (error) console.error("Error fetching announcement:", error.message);
+    else if (data.length > 0) {
+        display.innerText = data[0].content;
+    } else {
+        display.innerText = "No current announcements.";
+    }
+}
+
+async function updateAnnouncement() {
+    const input = document.getElementById('announcementInput');
+    const content = input.value.trim();
+
+    if (!content) { alert("Please type something first!"); return; }
+
+    const { error } = await _supabase
+        .from('announcements')
+        .insert([{ content: content }]);
+
+    if (error) alert("Error posting: " + error.message);
+    else {
+        input.value = "";
+        fetchAnnouncement();
+    }
+}
 
 // --- MEMBER FUNCTIONS ---
 
@@ -19,17 +55,23 @@ async function fetchMembers() {
         .order('id', { ascending: true });
 
     if (error) console.error("Error fetching members:", error.message);
-    else displayMembers(members);
+    else {
+        displayMembers(members);
+        updateHeadcount(members); // Update the counter
+    }
+}
+
+function updateHeadcount(members) {
+    const total = members.length;
+    const present = members.filter(m => m.is_present).length;
+    document.getElementById('headcount').innerText = `Total: ${total} | Present: ${present}`;
 }
 
 async function addMember() {
     let nameInput = document.getElementById('nameInput');
     let nameValue = nameInput.value.trim();
 
-    if (nameValue === "") {
-        alert("Please type a name!");
-        return;
-    }
+    if (nameValue === "") { alert("Please type a name!"); return; }
 
     const { error } = await _supabase
         .from('members')
@@ -98,6 +140,21 @@ async function fetchSongs() {
 
     if (error) console.error("Error fetching songs:", error.message);
     else displaySongs(songs);
+}
+
+// Search Filter Logic
+function filterSongs() {
+    const searchTerm = document.getElementById('songSearch').value.toLowerCase();
+    const listItems = document.querySelectorAll('#songList li');
+
+    listItems.forEach(li => {
+        const text = li.innerText.toLowerCase();
+        if (text.includes(searchTerm)) {
+            li.style.display = "flex";
+        } else {
+            li.style.display = "none";
+        }
+    });
 }
 
 async function addSong() {
@@ -169,7 +226,7 @@ async function fetchCourses() {
 
     if (error) console.error("Error fetching courses:", error.message);
     else if (courses.length > 0) {
-        displayCourse(courses[0]); // Display the latest update
+        displayCourse(courses[0]); 
     }
 }
 
