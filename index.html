@@ -1,55 +1,138 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ማህበረ ቅድስት ክርስቶስ ሰምራ - Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-    <nav>
-        <h1>ማህበረ ቅድስት ክርስቶስ ሰምራ</h1>
-    </nav>
+const supabaseUrl = 'https://rntxwnovbkmnqiylvqnq.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJudHh3bm92YmttbnFpeWx2cW5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxOTIwMjEsImV4cCI6MjA4NTc2ODAyMX0.QpO8mXj4rx0uJRyUM94YyIzm0pPRgl00DQvePOIrF04';
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    <div class="container">
-        <section class="card">
-            <h2>📢 Group Announcement</h2>
-            <div id="announcementDisplay">Loading...</div>
-            <div class="input-group">
-                <input type="text" id="announcementInput" placeholder="Update message...">
-                <button onclick="updateAnnouncement()" class="btn-primary" style="width:auto; background:#fbc02d; color:#333;">Post</button>
-            </div>
-        </section>
+// This runs as soon as the page loads
+window.onload = () => {
+    // CHECK: Are we on the Home Page?
+    if (document.getElementById('memberList')) {
+        console.log("On Dashboard");
+        fetchMembers();
+        fetchAnnouncement();
+    } 
+    
+    // CHECK: Are we on the Profile Page?
+    if (document.getElementById('profileDetail')) {
+        console.log("On Profile Page");
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        if (id) fetchSingleMember(id);
+    }
+};
 
-        <section class="card">
-            <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2>👥 Member Directory</h2>
-                <span id="headcount" class="role-badge">Total: 0</span>
-            </div>
-            
-            <ul id="memberList" class="member-grid"></ul>
+// --- DASHBOARD FUNCTIONS ---
 
-            <div class="add-section">
-                <h3>+ Add New Profile</h3>
-                <div class="profile-grid-form">
-                    <input type="text" id="nameInput" placeholder="Full Name">
-                    <input type="text" id="roleInput" placeholder="Role (e.g. Leader)">
-                    <input type="number" id="ageInput" placeholder="Age">
-                    <input type="text" id="locationInput" placeholder="Location">
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="photoFile" accept="image/*" onchange="previewImage(event)">
-                        <div id="uploadProgressContainer" style="display:none; margin-top:10px;"><div id="uploadProgressBar"></div></div>
-                        <center><img id="imagePreview" src=""></center>
-                    </div>
-                    <button onclick="addMember()" class="btn-primary full-row" id="submitBtn">
-                        <span id="btnText">Save Member</span>
-                        <div id="btnSpinner" class="spinner" style="display:none;"></div>
-                    </button>
-                </div>
+async function fetchMembers() {
+    let { data: members, error } = await _supabase.from('members').select('*').order('name', { ascending: true });
+    if (members) {
+        displayMembers(members);
+        const headcount = document.getElementById('headcount');
+        if (headcount) headcount.innerText = `Total: ${members.length}`;
+    }
+}
+
+function displayMembers(members) {
+    const list = document.getElementById('memberList');
+    list.innerHTML = "";
+    members.forEach(m => {
+        const li = document.createElement('li');
+        li.className = "member-item";
+        li.innerHTML = `
+            <a href="profile.html?id=${m.id}" class="member-link">
+                <img src="${m.photo_url || 'https://via.placeholder.com/150'}">
+                <div class="member-name">${m.name}</div>
+                <div class="member-role">${m.role || 'Member'}</div>
+            </a>
+        `;
+        list.appendChild(li);
+    });
+}
+
+async function addMember() {
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const fileInput = document.getElementById('photoFile');
+    const nameInput = document.getElementById('nameInput');
+
+    if (!nameInput.value) { alert("Please enter a name"); return; }
+
+    // Loading State
+    if (btnText) btnText.style.display = 'none';
+    if (btnSpinner) btnSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+
+    let photoUrl = 'https://via.placeholder.com/150';
+    const file = fileInput.files[0];
+
+    if (file) {
+        const fileName = `${Date.now()}_${file.name}`;
+        const { error: uploadError } = await _supabase.storage.from('profile-photos').upload(fileName, file);
+        if (!uploadError) {
+            const { data } = _supabase.storage.from('profile-photos').getPublicUrl(fileName);
+            photoUrl = data.publicUrl;
+        }
+    }
+
+    const payload = {
+        name: nameInput.value,
+        role: document.getElementById('roleInput').value,
+        age: document.getElementById('ageInput').value,
+        location: document.getElementById('locationInput').value,
+        photo_url: photoUrl
+    };
+
+    const { error } = await _supabase.from('members').insert([payload]);
+
+    if (error) {
+        alert("Error: " + error.message);
+    } else {
+        // Clear form and refresh
+        location.reload(); 
+    }
+}
+
+// --- PROFILE PAGE FUNCTIONS ---
+
+async function fetchSingleMember(id) {
+    const { data, error } = await _supabase.from('members').select('*').eq('id', id).single();
+    const container = document.getElementById('profileDetail');
+    
+    if (data) {
+        container.innerHTML = `
+            <img src="${data.photo_url}" class="large-avatar">
+            <h1>${data.name}</h1>
+            <span class="role-badge">${data.role || 'Member'}</span>
+            <div class="profile-info-grid">
+                <div class="info-item"><strong>Age</strong> ${data.age || 'N/A'}</div>
+                <div class="info-item"><strong>Location</strong> ${data.location || 'N/A'}</div>
+                <div class="info-item"><strong>Job</strong> ${data.job_status || 'N/A'}</div>
+                <div class="info-item"><strong>Activity</strong> ${data.activity || 'N/A'}</div>
             </div>
-        </section>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+            <button onclick="deleteMemberAndBack(${data.id})" class="btn-danger">Delete Profile</button>
+        `;
+    } else {
+        container.innerHTML = "<p>Member not found.</p>";
+    }
+}
+
+async function deleteMemberAndBack(id) {
+    if (confirm("Permanently delete this member?")) {
+        await _supabase.from('members').delete().eq('id', id);
+        window.location.href = 'index.html';
+    }
+}
+
+// --- ANNOUNCEMENTS ---
+async function fetchAnnouncement() {
+    let { data } = await _supabase.from('announcements').select('*').order('id', { ascending: false }).limit(1);
+    const display = document.getElementById('announcementDisplay');
+    if (data && data.length > 0 && display) display.innerText = data[0].content;
+}
+
+async function updateAnnouncement() {
+    const val = document.getElementById('announcementInput').value;
+    if (!val) return;
+    await _supabase.from('announcements').insert([{ content: val }]);
+    location.reload();
+}
